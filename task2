@@ -1,5 +1,6 @@
 import java.util.*;
 import javax.xml.parsers.*;
+import org.json.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
@@ -8,14 +9,18 @@ public class XMLReader extends DefaultHandler {
     private boolean inRecord;
     private boolean inField;
     private String currentField;
+    private JSONObject currentObject;
+    private JSONArray recordsArray;
 
     public XMLReader(Set<String> fieldsToPrint) {
         this.fieldsToPrint = fieldsToPrint;
+        this.recordsArray = new JSONArray();
     }
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if (qName.equalsIgnoreCase("Record")) {
             inRecord = true;
+            currentObject = new JSONObject();
         } else if (inRecord && fieldsToPrint.contains(qName)) {
             inField = true;
             currentField = qName;
@@ -25,6 +30,7 @@ public class XMLReader extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equalsIgnoreCase("Record")) {
             inRecord = false;
+            recordsArray.put(currentObject);
         } else if (inRecord && fieldsToPrint.contains(qName)) {
             inField = false;
         }
@@ -32,7 +38,7 @@ public class XMLReader extends DefaultHandler {
 
     public void characters(char ch[], int start, int length) throws SAXException {
         if (inField) {
-            System.out.println(currentField + ": " + new String(ch, start, length));
+            currentObject.put(currentField, new String(ch, start, length));
         }
     }
 
@@ -53,6 +59,8 @@ public class XMLReader extends DefaultHandler {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             saxParser.parse("data.xml", xmlReader);
+
+            System.out.println(xmlReader.recordsArray.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
