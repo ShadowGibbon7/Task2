@@ -1,55 +1,60 @@
+import java.util.*;
 import javax.xml.parsers.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 public class XMLReader extends DefaultHandler {
-    boolean id = false;
-    boolean name = false;
-    boolean email = false;
-    boolean phone = false;
+    private final Set<String> fieldsToPrint;
+    private boolean inRecord;
+    private boolean inField;
+    private String currentField;
+
+    public XMLReader(Set<String> fieldsToPrint) {
+        this.fieldsToPrint = fieldsToPrint;
+    }
 
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (qName.equalsIgnoreCase("ID")) {
-            id = true;
+        if (qName.equalsIgnoreCase("Record")) {
+            inRecord = true;
+        } else if (inRecord && fieldsToPrint.contains(qName)) {
+            inField = true;
+            currentField = qName;
         }
-        if (qName.equalsIgnoreCase("Name")) {
-            name = true;
-        }
-        if (qName.equalsIgnoreCase("Email")) {
-            email = true;
-        }
-        if (qName.equalsIgnoreCase("Phone")) {
-            phone = true;
+    }
+
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (qName.equalsIgnoreCase("Record")) {
+            inRecord = false;
+        } else if (inRecord && fieldsToPrint.contains(qName)) {
+            inField = false;
         }
     }
 
     public void characters(char ch[], int start, int length) throws SAXException {
-        if (id) {
-            System.out.println("ID: " + new String(ch, start, length));
-            id = false;
-        }
-        if (name) {
-            System.out.println("Name: " + new String(ch, start, length));
-            name = false;
-        }
-        if (email) {
-            System.out.println("Email: " + new String(ch, start, length));
-            email = false;
-        }
-        if (phone) {
-            System.out.println("Phone: " + new String(ch, start, length));
-            phone = false;
+        if (inField) {
+            System.out.println(currentField + ": " + new String(ch, start, length));
         }
     }
 
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Set<String> fieldsToPrint = new HashSet<>();
+
+        // Prompt the user to select which fields they want to print
+        System.out.println("Which fields do you want to print? (enter one field per line, or leave empty to print all fields)");
+        String field = scanner.nextLine();
+        while (!field.isEmpty()) {
+            fieldsToPrint.add(field.trim());
+            field = scanner.nextLine();
+        }
+
         try {
-            XMLReader xmlReader = new XMLReader();
+            XMLReader xmlReader = new XMLReader(fieldsToPrint);
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             saxParser.parse("data.xml", xmlReader);
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
     }
 }
