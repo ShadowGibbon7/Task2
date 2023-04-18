@@ -1,0 +1,55 @@
+import javax.xml.parsers.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
+
+public class XMLReader extends DefaultHandler {
+    boolean id = false;
+    boolean name = false;
+    boolean email = false;
+    boolean phone = false;
+
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if (qName.equalsIgnoreCase("ID")) {
+            id = true;
+        }
+        if (qName.equalsIgnoreCase("Name")) {
+            name = true;
+        }
+        if (qName.equalsIgnoreCase("Email")) {
+            email = true;
+        }
+        if (qName.equalsIgnoreCase("Phone")) {
+            phone = true;
+        }
+    }
+
+    public void characters(char ch[], int start, int length) throws SAXException {
+        if (id) {
+            System.out.println("ID: " + new String(ch, start, length));
+            id = false;
+        }
+        if (name) {
+            System.out.println("Name: " + new String(ch, start, length));
+            name = false;
+        }
+        if (email) {
+            System.out.println("Email: " + new String(ch, start, length));
+            email = false;
+        }
+        if (phone) {
+            System.out.println("Phone: " + new String(ch, start, length));
+            phone = false;
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            XMLReader xmlReader = new XMLReader();
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            saxParser.parse("data.xml", xmlReader);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
