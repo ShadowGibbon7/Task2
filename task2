@@ -50,6 +50,6 @@ public class XMLReader extends DefaultHandler {
             saxParser.parse("data.xml", xmlReader);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        } 
     }
 }
