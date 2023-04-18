@@ -48,10 +48,18 @@ public class XMLReader extends DefaultHandler {
 
         // Prompt the user to select which fields they want to print
         System.out.println("Which fields do you want to print? (enter one field per line, or leave empty to print all fields)");
-        String field = scanner.nextLine();
-        while (!field.isEmpty()) {
-            fieldsToPrint.add(field.trim());
-            field = scanner.nextLine();
+
+        while (true) {
+            String field = scanner.nextLine().trim();
+            if (field.isEmpty()) {
+                break;
+            }
+            if (!fieldsToPrint.contains(field)) {
+                fieldsToPrint.add(field);
+                System.out.println(field + " will be printed.");
+            } else {
+                System.out.println("Field already selected. Please select a different field or leave empty to print all fields.");
+            }
         }
 
         try {
@@ -63,6 +71,8 @@ public class XMLReader extends DefaultHandler {
             System.out.println(xmlReader.recordsArray.toString());
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            scanner.close();
         }
     }
 }
